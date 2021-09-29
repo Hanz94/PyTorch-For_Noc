@@ -1,0 +1,88 @@
+(pytorch_p38) hansika@127:~/PyTourch$ python3 deepcor-noc.py 
+deepcor-noc.py:21: UserWarning: The given NumPy array is not writeable, and PyTorch does not support non-writeable tensors. This means you can write to the underlying (supposedly non-writeable) NumPy array using the tensor. You may want to copy the array to protect its data or make it writeable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at  /opt/conda/conda-bld/pytorch_1623448216815/work/torch/csrc/utils/tensor_numpy.cpp:180.)
+  x = torch.from_numpy(x)
+Counter({0: 152, 1: 148})
+Counter({1: 50, 0: 46})
+/home/hansika/anaconda3/envs/pytorch_p38/lib/python3.8/site-packages/torch/nn/functional.py:718: UserWarning: Named tensors and all their associated APIs are an experimental feature and subject to change. Please do not use them for anything important until they are released as stable. (Triggered internally at  /opt/conda/conda-bld/pytorch_1623448216815/work/c10/core/TensorImpl.h:1156.)
+  return torch.max_pool2d(input, kernel_size, stride, padding, dilation, ceil_mode)
+Traceback (most recent call last):
+  File "deepcor-noc.py", line 118, in <module>
+    loss = loss(output.view(BATCH_SIZE), y)
+RuntimeError: shape '[2]' is invalid for input of size 4
+(pytorch_p38) hansika@127:~/PyTourch$ python3 deepcor-noc.py 
+deepcor-noc.py:21: UserWarning: The given NumPy array is not writeable, and PyTorch does not support non-writeable tensors. This means you can write to the underlying (supposedly non-writeable) NumPy array using the tensor. You may want to copy the array to protect its data or make it writeable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at  /opt/conda/conda-bld/pytorch_1623448216815/work/torch/csrc/utils/tensor_numpy.cpp:180.)
+  x = torch.from_numpy(x)
+Counter({0: 150, 1: 150})
+Counter({0: 48, 1: 48})
+/home/hansika/anaconda3/envs/pytorch_p38/lib/python3.8/site-packages/torch/nn/functional.py:718: UserWarning: Named tensors and all their associated APIs are an experimental feature and subject to change. Please do not use them for anything important until they are released as stable. (Triggered internally at  /opt/conda/conda-bld/pytorch_1623448216815/work/c10/core/TensorImpl.h:1156.)
+  return torch.max_pool2d(input, kernel_size, stride, padding, dilation, ceil_mode)
+tensor(0.4741, grad_fn=<NllLossBackward>)
+Accuracy:  0.5
+(pytorch_p38) hansika@127:~/PyTourch$ python3 deepcor-noc.py 
+deepcor-noc.py:21: UserWarning: The given NumPy array is not writeable, and PyTorch does not support non-writeable tensors. This means you can write to the underlying (supposedly non-writeable) NumPy array using the tensor. You may want to copy the array to protect its data or make it writeable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at  /opt/conda/conda-bld/pytorch_1623448216815/work/torch/csrc/utils/tensor_numpy.cpp:180.)
+  x = torch.from_numpy(x)
+Counter({0: 158, 1: 142})
+Counter({1: 56, 0: 40})
+/home/hansika/anaconda3/envs/pytorch_p38/lib/python3.8/site-packages/torch/nn/functional.py:718: UserWarning: Named tensors and all their associated APIs are an experimental feature and subject to change. Please do not use them for anything important until they are released as stable. (Triggered internally at  /opt/conda/conda-bld/pytorch_1623448216815/work/c10/core/TensorImpl.h:1156.)
+  return torch.max_pool2d(input, kernel_size, stride, padding, dilation, ceil_mode)
+tensor(0.7241, grad_fn=<NllLossBackward>)
+Accuracy:  0.417
+(pytorch_p38) hansika@127:~/PyTourch$ python3 deepcor-noc.py 
+2021-09-29 14:49:58.609237
+deepcor-noc.py:25: UserWarning: The given NumPy array is not writeable, and PyTorch does not support non-writeable tensors. This means you can write to the underlying (supposedly non-writeable) NumPy array using the tensor. You may want to copy the array to protect its data or make it writeable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at  /opt/conda/conda-bld/pytorch_1623448216815/work/torch/csrc/utils/tensor_numpy.cpp:180.)
+  x = torch.from_numpy(x)
+Counter({1: 154, 0: 146})
+Counter({0: 52, 1: 44})
+/home/hansika/anaconda3/envs/pytorch_p38/lib/python3.8/site-packages/torch/nn/functional.py:718: UserWarning: Named tensors and all their associated APIs are an experimental feature and subject to change. Please do not use them for anything important until they are released as stable. (Triggered internally at  /opt/conda/conda-bld/pytorch_1623448216815/work/c10/core/TensorImpl.h:1156.)
+  return torch.max_pool2d(input, kernel_size, stride, padding, dilation, ceil_mode)
+tensor(0.6931, grad_fn=<NllLossBackward>)
+tensor(0.6931, grad_fn=<NllLossBackward>)
+tensor(0.6931, grad_fn=<NllLossBackward>)
+Accuracy:  0.542
+2021-09-29 15:12:26.737097
+(pytorch_p38) hansika@127:~/PyTourch$ python3 deepcor-noc.py 
+2021-09-29 15:15:54.312701
+deepcor-noc.py:25: UserWarning: The given NumPy array is not writeable, and PyTorch does not support non-writeable tensors. This means you can write to the underlying (supposedly non-writeable) NumPy array using the tensor. You may want to copy the array to protect its data or make it writeable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at  /opt/conda/conda-bld/pytorch_1623448216815/work/torch/csrc/utils/tensor_numpy.cpp:180.)
+  x = torch.from_numpy(x)
+Counter({1: 152, 0: 148})
+Counter({0: 50, 1: 46})
+/home/hansika/anaconda3/envs/pytorch_p38/lib/python3.8/site-packages/torch/nn/functional.py:718: UserWarning: Named tensors and all their associated APIs are an experimental feature and subject to change. Please do not use them for anything important until they are released as stable. (Triggered internally at  /opt/conda/conda-bld/pytorch_1623448216815/work/c10/core/TensorImpl.h:1156.)
+  return torch.max_pool2d(input, kernel_size, stride, padding, dilation, ceil_mode)
+tensor(0.6931, grad_fn=<NllLossBackward>)
+tensor(0.6931, grad_fn=<NllLossBackward>)
+tensor(0.6931, grad_fn=<NllLossBackward>)
+Accuracy:  0.521
+2021-09-29 15:38:24.834512
+(pytorch_p38) hansika@127:~/PyTourch$ without last sigmoid
+without: command not found
+(pytorch_p38) hansika@127:~/PyTourch$ python3 deepcor-noc.py 
+2021-09-29 15:42:44.535676
+deepcor-noc.py:25: UserWarning: The given NumPy array is not writeable, and PyTorch does not support non-writeable tensors. This means you can write to the underlying (supposedly non-writeable) NumPy array using the tensor. You may want to copy the array to protect its data or make it writeable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at  /opt/conda/conda-bld/pytorch_1623448216815/work/torch/csrc/utils/tensor_numpy.cpp:180.)
+  x = torch.from_numpy(x)
+Counter({1: 155, 0: 145})
+Counter({0: 53, 1: 43})
+/home/hansika/anaconda3/envs/pytorch_p38/lib/python3.8/site-packages/torch/nn/functional.py:718: UserWarning: Named tensors and all their associated APIs are an experimental feature and subject to change. Please do not use them for anything important until they are released as stable. (Triggered internally at  /opt/conda/conda-bld/pytorch_1623448216815/work/c10/core/TensorImpl.h:1156.)
+  return torch.max_pool2d(input, kernel_size, stride, padding, dilation, ceil_mode)
+Traceback (most recent call last):
+  File "deepcor-noc.py", line 122, in <module>
+    loss = loss(output, y)
+  File "/home/hansika/anaconda3/envs/pytorch_p38/lib/python3.8/site-packages/torch/nn/modules/module.py", line 1051, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/home/hansika/anaconda3/envs/pytorch_p38/lib/python3.8/site-packages/torch/nn/modules/loss.py", line 1120, in forward
+    return F.cross_entropy(input, target, weight=self.weight,
+  File "/home/hansika/anaconda3/envs/pytorch_p38/lib/python3.8/site-packages/torch/nn/functional.py", line 2824, in cross_entropy
+    return torch._C._nn.cross_entropy_loss(input, target, weight, _Reduction.get_enum(reduction), ignore_index)
+TypeError: cross_entropy_loss(): argument 'input' (position 1) must be Tensor, not NoneType
+(pytorch_p38) hansika@127:~/PyTourch$ python3 deepcor-noc.py 
+2021-09-29 15:45:32.539257
+deepcor-noc.py:25: UserWarning: The given NumPy array is not writeable, and PyTorch does not support non-writeable tensors. This means you can write to the underlying (supposedly non-writeable) NumPy array using the tensor. You may want to copy the array to protect its data or make it writeable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at  /opt/conda/conda-bld/pytorch_1623448216815/work/torch/csrc/utils/tensor_numpy.cpp:180.)
+  x = torch.from_numpy(x)
+Counter({1: 154, 0: 146})
+Counter({0: 52, 1: 44})
+/home/hansika/anaconda3/envs/pytorch_p38/lib/python3.8/site-packages/torch/nn/functional.py:718: UserWarning: Named tensors and all their associated APIs are an experimental feature and subject to change. Please do not use them for anything important until they are released as stable. (Triggered internally at  /opt/conda/conda-bld/pytorch_1623448216815/work/c10/core/TensorImpl.h:1156.)
+  return torch.max_pool2d(input, kernel_size, stride, padding, dilation, ceil_mode)
+tensor(0.6931, grad_fn=<NllLossBackward>)
+tensor(0.6931, grad_fn=<NllLossBackward>)
+tensor(0.6931, grad_fn=<NllLossBackward>)
+Accuracy:  0.542
+2021-09-29 16:08:43.380694

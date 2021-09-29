@@ -8,6 +8,10 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 from collections import Counter
 import gc
+import datetime
+
+
+print(datetime.datetime.now())
 
 class MyDataset(Dataset):
     def __init__(self, data_dir, file_index):
@@ -36,15 +40,15 @@ number_of_files = 41
 
 # print(len(full_dataset))
 
-data_set = MyDataset("/home/hansika/gem5/gem5/scripts/numpy_data/64_nodes/",0)
-data_set,data_set_1 = torch.utils.data.random_split(data_set, [100, 399068]) 
-data_set_1,data_set_2 = torch.utils.data.random_split(data_set_1, [50, 399018]) 
+data_set = MyDataset("/home/hansika/gem5/gem5/scripts/numpy_data_reduced/64_nodes/",0)
+train_data_set, test_data_set = torch.utils.data.random_split(data_set, [300, 96]) 
+# data_set_1,data_set_2 = torch.utils.data.random_split(data_set_1, [50, 399018]) 
 
 
-train_classes = [label.item() for _, label in data_set]
+train_classes = [label.item() for _, label in train_data_set]
 print(Counter(train_classes))
 
-test_classes = [label.item() for _, label in data_set_1]
+test_classes = [label.item() for _, label in test_data_set]
 print(Counter(test_classes))
 
 gc.collect()
@@ -76,7 +80,7 @@ class Net(nn.Module):
         self.fc1 = nn.Linear(1000*404, 3000) # need to automate arriving at this number (1000*254)
         self.fc2 = nn.Linear(3000, 800) 
         self.fc3 = nn.Linear(800,100)
-        self.fc4 = nn.Linear(100,1)
+        self.fc4 = nn.Linear(100,2)
 
     def forward(self, x):
         x = self.pool1(F.relu(self.conv1(x)))
@@ -88,7 +92,8 @@ class Net(nn.Module):
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
         x = F.relu(self.fc4(x))
-        return torch.sigmoid(x)
+        return x
+        # return torch.sigmoid(x)
     
 # ------------------- Training the CNN ------------------------------------- ##
 # For now this code is only to show the structure, I need to add data preparation and modify code accordingly.
@@ -99,14 +104,14 @@ isTraining = True
 if isTraining:
    
     BATCH_SIZE = 2
-    EPOCHS = 1
+    EPOCHS = 3
     
-    trainset = torch.utils.data.DataLoader(data_set, batch_size=BATCH_SIZE, shuffle=True)
-    testset = torch.utils.data.DataLoader(data_set_1, batch_size=BATCH_SIZE, shuffle=True)
+    trainset = torch.utils.data.DataLoader(train_data_set, batch_size=BATCH_SIZE, shuffle=True)
+    testset = torch.utils.data.DataLoader(test_data_set, batch_size=BATCH_SIZE, shuffle=True)
 
     # learning rate of the adam optimizer should be a hyperparameter
     # optimizer = optim.Adam(net.parameters(), lr=0.001)
-    optimizer = optim.SGD(net.parameters(), lr=0.001)
+    optimizer = optim.SGD(net.parameters(), lr=0.01)
 
     for epoch in range(EPOCHS):
         for data in trainset:
@@ -137,6 +142,7 @@ if isTraining:
 
     print("Accuracy: ", round(correct/total, 3))  
 
+print(datetime.datetime.now())
 
 
 
