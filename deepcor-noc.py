@@ -40,7 +40,7 @@ number_of_files = 41
 
 # print(len(full_dataset))
 
-data_set = MyDataset("/home/hansika/gem5/gem5/scripts/numpy_data_reduced/64_nodes/",0)
+data_set = MyDataset("/home/hansika/gem5/gem5/scripts/numpy_data_reduced/64_nodes/",1)
 train_data_set, test_data_set = torch.utils.data.random_split(data_set, [300, 96]) 
 # data_set_1,data_set_2 = torch.utils.data.random_split(data_set_1, [50, 399018]) 
 
@@ -91,7 +91,7 @@ class Net(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
-        x = F.relu(self.fc4(x))
+        x = self.fc4(x)
         return x
         # return torch.sigmoid(x)
     
@@ -103,7 +103,7 @@ net = Net()
 isTraining = True
 if isTraining:
    
-    BATCH_SIZE = 2
+    BATCH_SIZE = 5
     EPOCHS = 3
     
     trainset = torch.utils.data.DataLoader(train_data_set, batch_size=BATCH_SIZE, shuffle=True)
@@ -111,7 +111,9 @@ if isTraining:
 
     # learning rate of the adam optimizer should be a hyperparameter
     # optimizer = optim.Adam(net.parameters(), lr=0.001)
-    optimizer = optim.SGD(net.parameters(), lr=0.01)
+    optimizer = optim.SGD(net.parameters(), lr=0.0001)
+    # loss_fun = nn.CrossEntropyLoss()
+
 
     for epoch in range(EPOCHS):
         for data in trainset:
@@ -119,8 +121,7 @@ if isTraining:
             net.zero_grad()  
             X = X.type(torch.FloatTensor)
             output = net(X.view(-1,1,2,450))
-            loss = nn.CrossEntropyLoss()
-            loss = loss(output, y)
+            loss = F.cross_entropy(output, y)
             loss.backward() 
             optimizer.step() 
         print(loss)  
