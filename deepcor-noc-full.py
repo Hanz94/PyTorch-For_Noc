@@ -31,18 +31,18 @@ class MyDataset(Dataset):
 
 list_of_dataset = []
 number_of_files = 41
-# from torch.utils.data import ConcatDataset
+from torch.utils.data import ConcatDataset
 
-# for i in range(number_of_files):
-#     list_of_dataset.append(MyDataset("/home/hansika/gem5/gem5/scripts/numpy_data/64_nodes/",i))
+for i in range(number_of_files):
+     list_of_dataset.append(MyDataset("/cise/homes/hansikam.lokukat/64_nodes_100/",i))
 
-# full_dataset = ConcatDataset(list_of_dataset)
+full_dataset = ConcatDataset(list_of_dataset)
 
-# print(len(full_dataset))
+print(len(full_dataset))
 
-data_set = MyDataset("/home/hansika/gem5/gem5/scripts/numpy_data_reduced/64_nodes/",1)
-train_data_set, test_data_set = torch.utils.data.random_split(data_set, [300, 96]) 
-# data_set_1,data_set_2 = torch.utils.data.random_split(data_set_1, [50, 399018]) 
+# data_set = MyDataset("/home/hansika/gem5/gem5/scripts/numpy_data_reduced/64_nodes/",1)
+# train_data_set, test_data_set = torch.utils.data.random_split(data_set, [300, 96]) 
+train_data_set, test_data_set = torch.utils.data.random_split(full_dataset, [10128, 6000]) 
 
 
 train_classes = [label.item() for _, label in train_data_set]
@@ -103,8 +103,8 @@ net = Net()
 isTraining = True
 if isTraining:
    
-    BATCH_SIZE = 2
-    EPOCHS = 3
+    BATCH_SIZE = 50
+    EPOCHS = 5
     
     trainset = torch.utils.data.DataLoader(train_data_set, batch_size=BATCH_SIZE, shuffle=True)
     testset = torch.utils.data.DataLoader(test_data_set, batch_size=BATCH_SIZE, shuffle=True)
