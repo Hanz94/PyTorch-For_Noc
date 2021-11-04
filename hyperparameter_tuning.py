@@ -47,16 +47,38 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import random_split
+from torch.utils.data import ConcatDataset
+from torch.utils.data import Dataset, DataLoader
 import torchvision
 import torchvision.transforms as transforms
 from ray import tune
 from ray.tune import CLIReporter
 from ray.tune.schedulers import ASHAScheduler
-
 ######################################################################
 # Most of the imports are needed for building the PyTorch model. Only the last three
 # imports are for Ray Tune.
-#
+
+# Data Set
+# ------------
+# Custom dataset class to support the data 
+
+
+class MyDataset(Dataset):
+    def __init__(self, data_dir, file_index):
+        self.data_dir = data_dir
+        self.file_index = file_index
+        y = np.load(self.data_dir + "/Y/" + str(self.file_index) + ".npy", allow_pickle=True)
+        self.y = torch.from_numpy(y)
+    
+    def __getitem__(self, index):
+        x = np.load(self.data_dir + "/X/" + str(self.file_index) + ".npy", allow_pickle=True, mmap_mode='r')
+        x = torch.from_numpy(x)
+        return [x[index], self.y[index]]
+    
+    def __len__(self):
+        return len(self.y)
+
+
 # Data loaders
 # ------------
 # We wrap the data loaders in their own function and pass a global data directory.
@@ -64,18 +86,13 @@ from ray.tune.schedulers import ASHAScheduler
 
 
 def load_data(data_dir="./data"):
-    transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-    ])
-
-    trainset = torchvision.datasets.CIFAR10(
-        root=data_dir, train=True, download=True, transform=transform)
-
-    testset = torchvision.datasets.CIFAR10(
-        root=data_dir, train=False, download=True, transform=transform)
-
-    return trainset, testset
+    list_of_dataset = []
+    number_of_files = 41
+    for i in range(number_of_files):
+        list_of_dataset.append(MyDataset(data_dir,i))
+    full_dataset = ConcatDataset(list_of_dataset)
+    train_data_set, test_data_set = torch.utils.data.random_split(full_dataset, [10128, 6000]) 
+    return train_data_set, test_data_set
 
 ######################################################################
 # Configurable neural network
@@ -85,23 +102,42 @@ def load_data(data_dir="./data"):
 
 
 class Net(nn.Module):
-    def __init__(self, l1=120, l2=84):
-        super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(3, 6, 5)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(16 * 5 * 5, l1)
-        self.fc2 = nn.Linear(l1, l2)
-        self.fc3 = nn.Linear(l2, 10)
+    def __init__(self, W1=30, W2=10, K1=2000, K2=1000):
+        super().__init__() 
+        self.conv1 = nn.Conv2d(1, K1, (2,W1), stride=(2, 1))
+        self.pool1 = nn.MaxPool2d((1, 5), stride=(1, 1))
+        self.conv2 = nn.Conv2d(K1, K2, (1,W2), stride=(1, 1))
+        self.pool2 = nn.MaxPool2d((1, 5), stride=(1, 1))
+
+        # pass random data to identify the flattening shape
+        x = torch.randn(2,450).view(-1,1,2,450)
+        self._to_linear = None
+        self.convs(x)
+        
+        self.fc1 = nn.Linear(self._to_linear, 3000)
+        self.fc2 = nn.Linear(3000, 800) 
+        self.fc3 = nn.Linear(800,100)
+        self.fc4 = nn.Linear(100,2)
+
+    def convs(self, x):
+        x = self.pool1(F.relu(self.conv1(x)))
+        x = self.pool2(F.relu(self.conv2(x)))
+
+        if self._to_linear is None:
+            self._to_linear = x[0].shape[0]*x[0].shape[1]*x[0].shape[2]
+            print(self._to_linear)
+        return x
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
-        x = x.view(-1, 16 * 5 * 5)
+        x = self.convs(x)  
+        x = x.view(-1, self._to_linear)
+        x = torch.flatten(x, start_dim=1)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = F.relu(self.fc3(x))
+        x = self.fc4(x)
         return x
+
 
 ######################################################################
 # The train function
@@ -195,8 +231,8 @@ class Net(nn.Module):
 # The full code example looks like this:
 
 
-def train_cifar(config, checkpoint_dir=None, data_dir=None):
-    net = Net(config["l1"], config["l2"])
+def train_net(config, checkpoint_dir=None, data_dir=None):
+    net = Net(config["W1"], config["W2"], config["K1"], config["K2"])
 
     device = "cpu"
     if torch.cuda.is_available():
@@ -242,8 +278,9 @@ def train_cifar(config, checkpoint_dir=None, data_dir=None):
             # zero the parameter gradients
             optimizer.zero_grad()
 
+            inputs = inputs.type(torch.FloatTensor)
             # forward + backward + optimize
-            outputs = net(inputs)
+            outputs = net(inputs.view(-1,1,2,450))
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -374,13 +411,16 @@ def test_accuracy(net, device="cpu"):
 
 
 def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
-    data_dir = os.path.abspath("./data")
+    data_dir = os.path.abspath("/cise/homes/hansikam.lokukat/64_nodes_100")
+    checkpoint_dir = os.path.abspath("/export/research26/cyclone/hansika/cheakpoint")
     load_data(data_dir)
     config = {
-        "l1": tune.sample_from(lambda _: 2 ** np.random.randint(2, 9)),
-        "l2": tune.sample_from(lambda _: 2 ** np.random.randint(2, 9)),
+        "W1": tune.choice([5, 10, 20, 30]),
+        "W2": tune.choice([5, 10, 20, 30]),
+        "K1": tune.choice([500, 1000, 2000, 3000]),
+        "K2": tune.choice([500, 1000, 2000, 3000]),
         "lr": tune.loguniform(1e-4, 1e-1),
-        "batch_size": tune.choice([2, 4, 8, 16])
+        "batch_size": tune.choice([5, 10, 20, 50])
     }
     scheduler = ASHAScheduler(
         metric="loss",
@@ -392,7 +432,7 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
         # parameter_columns=["l1", "l2", "lr", "batch_size"],
         metric_columns=["loss", "accuracy", "training_iteration"])
     result = tune.run(
-        partial(train_cifar, data_dir=data_dir),
+        partial(train_net, data_dir=data_dir, checkpoint_dir=checkpoint_dir),
         resources_per_trial={"cpu": 2, "gpu": gpus_per_trial},
         config=config,
         num_samples=num_samples,
@@ -406,7 +446,7 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
     print("Best trial final validation accuracy: {}".format(
         best_trial.last_result["accuracy"]))
 
-    best_trained_model = Net(best_trial.config["l1"], best_trial.config["l2"])
+    best_trained_model = Net(best_trial.config["W1"], best_trial.config["W2"], best_trial.config["K1"], best_trial.config["K2"])
     device = "cpu"
     if torch.cuda.is_available():
         device = "cuda:0"
@@ -425,7 +465,7 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
 
 if __name__ == "__main__":
     # You can change the number of GPUs per trial here:
-    main(num_samples=10, max_num_epochs=10, gpus_per_trial=0)
+    main(num_samples=20, max_num_epochs=10, gpus_per_trial=0)
 
 
 ######################################################################
