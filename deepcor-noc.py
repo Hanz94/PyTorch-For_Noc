@@ -31,18 +31,9 @@ class MyDataset(Dataset):
 
 list_of_dataset = []
 number_of_files = 41
-# from torch.utils.data import ConcatDataset
 
-# for i in range(number_of_files):
-#     list_of_dataset.append(MyDataset("/home/hansika/gem5/gem5/scripts/numpy_data/64_nodes/",i))
-
-# full_dataset = ConcatDataset(list_of_dataset)
-
-# print(len(full_dataset))
-
-data_set = MyDataset("/home/hansika/gem5/gem5/scripts/numpy_data_reduced/64_nodes/",1)
+data_set = MyDataset("/cise/homes/hansikam.lokukat/64_nodes_100/",1)
 train_data_set, test_data_set = torch.utils.data.random_split(data_set, [300, 96]) 
-# data_set_1,data_set_2 = torch.utils.data.random_split(data_set_1, [50, 399018]) 
 
 
 train_classes = [label.item() for _, label in train_data_set]
@@ -76,24 +67,35 @@ class Net(nn.Module):
         self.pool1 = nn.MaxPool2d((1, 5), stride=(1, 1))
         self.conv2 = nn.Conv2d(K1, K2, (1,W2), stride=(1, 1))
         self.pool2 = nn.MaxPool2d((1, 5), stride=(1, 1))
+
+        x = torch.randn(2,450).view(-1,1,2,450)
+        self._to_linear = None
+        self.convs(x)
         
-        self.fc1 = nn.Linear(1000*404, 3000) # need to automate arriving at this number (1000*254)
+        # self.fc1 = nn.Linear(1000*404, 3000) # need to automate arriving at this number (1000*254)
+        self.fc1 = nn.Linear(self._to_linear, 3000)
         self.fc2 = nn.Linear(3000, 800) 
         self.fc3 = nn.Linear(800,100)
         self.fc4 = nn.Linear(100,2)
 
-    def forward(self, x):
+    def convs(self, x):
         x = self.pool1(F.relu(self.conv1(x)))
         x = self.pool2(F.relu(self.conv2(x)))
-        
-        x = x.view(-1, 1000*404)    
+
+        if self._to_linear is None:
+            self._to_linear = x[0].shape[0]*x[0].shape[1]*x[0].shape[2]
+            print(self._to_linear)
+        return x
+
+    def forward(self, x):
+        x = self.convs(x)  
+        x = x.view(-1, self._to_linear)
         x = torch.flatten(x, start_dim=1)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
         x = self.fc4(x)
         return x
-        # return torch.sigmoid(x)
     
 # ------------------- Training the CNN ------------------------------------- ##
 # For now this code is only to show the structure, I need to add data preparation and modify code accordingly.
@@ -126,6 +128,8 @@ if isTraining:
         print(loss)  
 
 
+    torch.save(net, "/cise/homes/hansikam.lokukat/64_nodes_100_model_test")
+    net = torch.load("/cise/homes/hansikam.lokukat/64_nodes_100_model_test")
 
     correct = 0
     total = 0
