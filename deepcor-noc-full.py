@@ -111,7 +111,7 @@ if isTraining:
 
     # learning rate of the adam optimizer should be a hyperparameter
     # optimizer = optim.Adam(net.parameters(), lr=0.001)
-    optimizer = optim.SGD(net.parameters(), lr=0.001)
+    optimizer = optim.SGD(net.parameters(), lr=0.0001)
     # loss_fun = nn.CrossEntropyLoss()
 
     for epoch in range(EPOCHS):
@@ -126,6 +126,7 @@ if isTraining:
         print(loss)  
 
 
+    torch.save(net, "/cise/homes/hansikam.lokukat/64_nodes_100_model")
 
     correct = 0
     total = 0
