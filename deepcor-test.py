@@ -5,13 +5,56 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from torch.utils.data import ConcatDataset
 from torch.utils.data import Dataset, DataLoader
 from collections import Counter
 import gc
 import datetime
+import argparse, sys
+
+
+BASE_PATH = '/export/research26/cyclone/hansika/noc_data'
+DIR = '64_nodes_100_c'
+NO_OF_FILES = 39
+
+
+parser=argparse.ArgumentParser()
+
+parser.add_argument('--base-path', help='base path')
+parser.add_argument('--dir', help='specific directory')
+parser.add_argument('--no-of-files', help='no of data files')
+
+args=parser.parse_args()
+
+if args.base_path != None:
+    BASE_PATH = args.base_path
+if args.dir != None:
+    DIR = args.dir 
+if args.no_of_files!= None:
+    NO_OF_FILES = int(args.no_of_files)
+else:
+    if DIR[-1] == 'c' or DIR[-2] == 'c':
+        NO_OF_FILES = 39
+    else:
+        NO_OF_FILES = 41
 
 
 print(datetime.datetime.now())
+
+
+def print_and_write_to_file(filez, text1, text2=None):
+    if text2 != None:
+        text = str(text1) + str(text2)
+    else:
+        text = str(text1)
+    filez.write(text)
+    print(text)
+    filez.write("\n")
+
+
+filez = open(BASE_PATH + "/model_test_results/" + DIR , 'a+')
+print_and_write_to_file(filez, '----------------------------------------------------------')
+
 
 class MyDataset(Dataset):
     def __init__(self, data_dir, file_index):
@@ -29,28 +72,26 @@ class MyDataset(Dataset):
         return len(self.y)
 
 
+
+
+
 list_of_dataset = []
-number_of_files = 38
-from torch.utils.data import ConcatDataset
+number_of_files = NO_OF_FILES
+print_and_write_to_file(filez,"No of flies : " + str(number_of_files))
+print_and_write_to_file(filez,"Reading from : " + BASE_PATH + "/numpy_data_reduced/" + DIR )
 
 for i in range(number_of_files):
-     list_of_dataset.append(MyDataset("/export/research26/cyclone/hansika/noc_data/numpy_data_reduced/64_nodes_100_c/",i))
+     list_of_dataset.append(MyDataset(BASE_PATH + "/numpy_data_reduced/" + DIR + "/",i))
 
 full_dataset = ConcatDataset(list_of_dataset)
 
-print(len(full_dataset))
-
-# data_set = MyDataset("/home/hansika/gem5/gem5/scripts/numpy_data_reduced/64_nodes/",1)
-# train_data_set, test_data_set = torch.utils.data.random_split(data_set, [300, 96]) 
-# train_data_set, test_data_set = torch.utils.data.random_split(full_dataset, [10128, 6000]) 
+print_and_write_to_file(filez,len(full_dataset))
 
 
 classes = [label.item() for _, label in full_dataset]
-print(Counter(classes))
+print_and_write_to_file(filez,Counter(classes))
 
 gc.collect()
-
-# print(data_set[10])
 
 ## ---------------------------------------- CNN initialization ----------------------------- ##
 
@@ -61,9 +102,6 @@ W1 = 30
 W2 = 10
 K1= 2000
 K2 = 1000
-
-#dummy data to try the NN ( 2 arrays of size 450)
-# dummy = torch.randn(2,450).view(-1,1,2,450)
 
 # represents the whole CNN
 class Net(nn.Module):
@@ -95,9 +133,11 @@ class Net(nn.Module):
 # ------------------- Training the CNN ------------------------------------- ##
 # For now this code is only to show the structure, I need to add data preparation and modify code accordingly.
 
+dir_of_model = DIR[0: DIR.rfind("_")+1]
 
 dataset = torch.utils.data.DataLoader(full_dataset, batch_size=50, shuffle=True)
-net = torch.load("/export/research26/cyclone/hansika/noc_data/models/64_100_")
+print_and_write_to_file(filez,"Testing with : " + BASE_PATH + "/models/" + dir_of_model)
+net = torch.load(BASE_PATH + "/models/" + dir_of_model)
 
 correct = 0
 TP = 0
@@ -125,13 +165,13 @@ with torch.no_grad():
                     FP +=1
             total += 1
 
-print("Accuracy: ", round(correct/total, 3))  
-print("TP: ", TP)  
-print("TN: ", TN)  
-print("FP: ", FP)  
-print("FN: ", FN)  
+print_and_write_to_file(filez,"Accuracy: ", round(correct/total, 3))  
+print_and_write_to_file(filez,"TP: ", TP)  
+print_and_write_to_file(filez,"TN: ", TN)  
+print_and_write_to_file(filez,"FP: ", FP)  
+print_and_write_to_file(filez,"FN: ", FN)  
 
-print(datetime.datetime.now())
+print_and_write_to_file(filez,datetime.datetime.now())
 
 
 
