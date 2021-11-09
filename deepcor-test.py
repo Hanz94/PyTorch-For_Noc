@@ -34,7 +34,7 @@ number_of_files = 38
 from torch.utils.data import ConcatDataset
 
 for i in range(number_of_files):
-     list_of_dataset.append(MyDataset("/cise/homes/hansikam.lokukat/64_nodes_100_c/",i))
+     list_of_dataset.append(MyDataset("/export/research26/cyclone/hansika/noc_data/numpy_data_reduced/64_nodes_100_c/",i))
 
 full_dataset = ConcatDataset(list_of_dataset)
 
@@ -97,9 +97,13 @@ class Net(nn.Module):
 
 
 dataset = torch.utils.data.DataLoader(full_dataset, batch_size=50, shuffle=True)
-net = torch.load("/cise/homes/hansikam.lokukat/64_nodes_100_model")
+net = torch.load("/export/research26/cyclone/hansika/noc_data/models/64_100_")
 
 correct = 0
+TP = 0
+TN = 0
+FP = 0
+FN = 0
 total = 0
 
 with torch.no_grad():
@@ -110,9 +114,22 @@ with torch.no_grad():
         for idx, i in enumerate(output):
             if torch.argmax(i) == y[idx]:
                 correct += 1
+                if y[idx] == 1:
+                    TP +=1
+                else:
+                    TN +=1
+            else:
+                if y[idx] == 1:
+                    FN +=1
+                else:
+                    FP +=1
             total += 1
 
 print("Accuracy: ", round(correct/total, 3))  
+print("TP: ", TP)  
+print("TN: ", TN)  
+print("FP: ", FP)  
+print("FN: ", FN)  
 
 print(datetime.datetime.now())
 
