@@ -5,11 +5,17 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from torch.utils.data import ConcatDataset
 from torch.utils.data import Dataset, DataLoader
 from collections import Counter
 import gc
 import datetime
+import argparse, sys
 
+
+BASE_PATH = '/export/research26/cyclone/hansika/noc_data'
+DIR = '64_nodes_100_'
+NO_OF_FILES = 41
 
 print(datetime.datetime.now())
 
@@ -29,12 +35,34 @@ class MyDataset(Dataset):
         return len(self.y)
 
 
+parser=argparse.ArgumentParser()
+
+parser.add_argument('--base-path', help='base path')
+parser.add_argument('--dir', help='specific directory')
+parser.add_argument('--no-of-files', help='no of data files')
+
+args=parser.parse_args()
+
+if args.base_path != None:
+    BASE_PATH = args.base_path
+if args.dir != None:
+    DIR = args.dir 
+if args.no_of_files!= None:
+    NO_OF_FILES = int(args.no_of_files)
+else:
+    if DIR[-1] == 'c' or DIR[-2] == 'c':
+        NO_OF_FILES = 39
+    else:
+        NO_OF_FILES = 41
+
+
 list_of_dataset = []
-number_of_files = 41
-from torch.utils.data import ConcatDataset
+number_of_files = NO_OF_FILES
+print("No of flies : " + str(number_of_files))
+print("Reading from : " + BASE_PATH + "/numpy_data_reduced/" + DIR )
 
 for i in range(number_of_files):
-     list_of_dataset.append(MyDataset("/export/research26/cyclone/hansika/64_nodes_100/",i))
+     list_of_dataset.append(MyDataset(BASE_PATH + "/numpy_data_reduced/" + DIR + "/", i))
 
 full_dataset = ConcatDataset(list_of_dataset)
 
@@ -42,7 +70,10 @@ print(len(full_dataset))
 
 # data_set = MyDataset("/home/hansika/gem5/gem5/scripts/numpy_data_reduced/64_nodes/",1)
 # train_data_set, test_data_set = torch.utils.data.random_split(data_set, [300, 96]) 
-train_data_set, test_data_set = torch.utils.data.random_split(full_dataset, [10128, 6000]) 
+if number_of_files == 41:
+    train_data_set, test_data_set = torch.utils.data.random_split(full_dataset, [16128, 8064])
+else:
+    train_data_set, test_data_set = torch.utils.data.random_split(full_dataset, [15176, 7588])
 
 
 train_classes = [label.item() for _, label in train_data_set]
@@ -137,7 +168,8 @@ if isTraining:
         print(loss)  
 
 
-    torch.save(net, "/export/research26/cyclone/hansika/64_nodes_100_model")
+    torch.save(net, BASE_PATH + "/models/" + DIR)
+    print("Model Saved as : " + BASE_PATH + "/models/" + DIR )
 
     correct = 0
     TP = 0
