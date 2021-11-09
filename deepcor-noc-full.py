@@ -12,12 +12,50 @@ import gc
 import datetime
 import argparse, sys
 
-
 BASE_PATH = '/export/research26/cyclone/hansika/noc_data'
 DIR = '64_nodes_100_'
 NO_OF_FILES = 41
+No_OF_EPOCHS = 5
 
-print(datetime.datetime.now())
+
+parser=argparse.ArgumentParser()
+
+parser.add_argument('--base-path', help='base path')
+parser.add_argument('--dir', help='specific directory')
+parser.add_argument('--no-of-files', help='no of data files')
+parser.add_argument('--no-of-epochs', help='no epochs for training')
+
+args=parser.parse_args()
+
+if args.base_path != None:
+    BASE_PATH = args.base_path
+if args.dir != None:
+    DIR = args.dir 
+if args.no_of_files!= None:
+    NO_OF_FILES = int(args.no_of_files)
+else:
+    if DIR[-1] == 'c' or DIR[-2] == 'c':
+        NO_OF_FILES = 39
+    else:
+        NO_OF_FILES = 41
+if args.no_of_epochs!= None:
+    No_OF_EPOCHS = int(args.no_of_epochs)
+
+
+def print_and_write_to_file(filez, text1, text2=None):
+    if text2 != None:
+        text = str(text1) + str(text2)
+    else:
+        text = str(text1)
+    filez.write(text)
+    print(text)
+    filez.write("\n")
+
+
+filez = open(BASE_PATH + "/model_train_results/" + DIR , 'a+')
+print_and_write_to_file(filez, '----------------------------------------------------------')
+
+print_and_write_to_file(filez, datetime.datetime.now())
 
 class MyDataset(Dataset):
     def __init__(self, data_dir, file_index):
@@ -35,41 +73,19 @@ class MyDataset(Dataset):
         return len(self.y)
 
 
-parser=argparse.ArgumentParser()
-
-parser.add_argument('--base-path', help='base path')
-parser.add_argument('--dir', help='specific directory')
-parser.add_argument('--no-of-files', help='no of data files')
-
-args=parser.parse_args()
-
-if args.base_path != None:
-    BASE_PATH = args.base_path
-if args.dir != None:
-    DIR = args.dir 
-if args.no_of_files!= None:
-    NO_OF_FILES = int(args.no_of_files)
-else:
-    if DIR[-1] == 'c' or DIR[-2] == 'c':
-        NO_OF_FILES = 39
-    else:
-        NO_OF_FILES = 41
-
-
 list_of_dataset = []
 number_of_files = NO_OF_FILES
-print("No of flies : " + str(number_of_files))
-print("Reading from : " + BASE_PATH + "/numpy_data_reduced/" + DIR )
+print_and_write_to_file(filez,"No of flies : " + str(number_of_files))
+print_and_write_to_file(filez,"Reading from : " + BASE_PATH + "/numpy_data_reduced/" + DIR )
 
 for i in range(number_of_files):
      list_of_dataset.append(MyDataset(BASE_PATH + "/numpy_data_reduced/" + DIR + "/", i))
 
 full_dataset = ConcatDataset(list_of_dataset)
 
-print(len(full_dataset))
+print_and_write_to_file(filez,len(full_dataset))
 
-# data_set = MyDataset("/home/hansika/gem5/gem5/scripts/numpy_data_reduced/64_nodes/",1)
-# train_data_set, test_data_set = torch.utils.data.random_split(data_set, [300, 96]) 
+
 if number_of_files == 41:
     train_data_set, test_data_set = torch.utils.data.random_split(full_dataset, [16128, 8064])
 else:
@@ -77,14 +93,12 @@ else:
 
 
 train_classes = [label.item() for _, label in train_data_set]
-print(Counter(train_classes))
+print_and_write_to_file(filez,Counter(train_classes))
 
 test_classes = [label.item() for _, label in test_data_set]
-print(Counter(test_classes))
+print_and_write_to_file(filez,Counter(test_classes))
 
 gc.collect()
-
-# print(data_set[10])
 
 ## ---------------------------------------- CNN initialization ----------------------------- ##
 
@@ -124,7 +138,7 @@ class Net(nn.Module):
 
         if self._to_linear is None:
             self._to_linear = x[0].shape[0]*x[0].shape[1]*x[0].shape[2]
-            print(self._to_linear)
+            print_and_write_to_file(filez,self._to_linear)
         return x
 
     def forward(self, x):
@@ -142,18 +156,28 @@ class Net(nn.Module):
 
 net = Net()
 
+print_and_write_to_file(filez, "W1 : ", W1)
+print_and_write_to_file(filez, "W2 : " , W2)
+print_and_write_to_file(filez, "K1 : " , K1)
+print_and_write_to_file(filez, "K2 : " , K2)
+
 isTraining = True
 if isTraining:
    
     BATCH_SIZE = 50
-    EPOCHS = 5
+    EPOCHS = No_OF_EPOCHS
+    learning_rate = 0.0001
+
+    print_and_write_to_file(filez, "No of epochs : ", EPOCHS)
+    print_and_write_to_file(filez, "Batch size : " , BATCH_SIZE)
+    print_and_write_to_file(filez, "Learning rate : " , learning_rate)
     
     trainset = torch.utils.data.DataLoader(train_data_set, batch_size=BATCH_SIZE, shuffle=True)
     testset = torch.utils.data.DataLoader(test_data_set, batch_size=BATCH_SIZE, shuffle=True)
 
     # learning rate of the adam optimizer should be a hyperparameter
     # optimizer = optim.Adam(net.parameters(), lr=0.001)
-    optimizer = optim.SGD(net.parameters(), lr=0.0001)
+    optimizer = optim.SGD(net.parameters(), lr=learning_rate)
     # loss_fun = nn.CrossEntropyLoss()
 
     for epoch in range(EPOCHS):
@@ -165,11 +189,11 @@ if isTraining:
             loss = F.cross_entropy(output, y)
             loss.backward() 
             optimizer.step() 
-        print(loss)  
+        print_and_write_to_file(filez,loss)  
 
 
     torch.save(net, BASE_PATH + "/models/" + DIR)
-    print("Model Saved as : " + BASE_PATH + "/models/" + DIR )
+    print_and_write_to_file(filez,"Model Saved as : " + BASE_PATH + "/models/" + DIR )
 
     correct = 0
     TP = 0
@@ -197,13 +221,12 @@ if isTraining:
                         FP +=1
                 total += 1
 
-    print("Accuracy: ", round(correct/total, 3))  
-    print("TP: ", TP)  
-    print("TN: ", TN)  
-    print("FP: ", FP)  
-    print("FN: ", FN)  
+    print_and_write_to_file(filez,"Accuracy: ", round(correct/total, 3))  
+    print_and_write_to_file(filez,"TP: ", TP)  
+    print_and_write_to_file(filez,"TN: ", TN)  
+    print_and_write_to_file(filez,"FP: ", FP)  
+    print_and_write_to_file(filez,"FN: ", FN)  
 
-print(datetime.datetime.now())
-
-
+print_and_write_to_file(filez,datetime.datetime.now())
+filez.close()
 
