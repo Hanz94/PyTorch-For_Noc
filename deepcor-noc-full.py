@@ -52,7 +52,7 @@ def print_and_write_to_file(filez, text1, text2=None):
     filez.write("\n")
 
 
-filez = open(BASE_PATH + "/model_train_results/" + DIR , 'a+')
+filez = open(BASE_PATH + "/model_train_results/epoch_" + str(No_OF_EPOCHS) + "/"  + DIR , 'a+')
 print_and_write_to_file(filez, '----------------------------------------------------------')
 
 print_and_write_to_file(filez, datetime.datetime.now())
@@ -192,8 +192,8 @@ if isTraining:
         print_and_write_to_file(filez,loss)  
 
 
-    torch.save(net, BASE_PATH + "/models/" + DIR)
-    print_and_write_to_file(filez,"Model Saved as : " + BASE_PATH + "/models/" + DIR )
+    torch.save(net, BASE_PATH + "/models/epoch_" + str(No_OF_EPOCHS) + "/" + DIR)
+    print_and_write_to_file(filez,"Model Saved as : " + BASE_PATH + "/models/epoch_" + str(No_OF_EPOCHS) + "/" + DIR )
 
     correct = 0
     TP = 0

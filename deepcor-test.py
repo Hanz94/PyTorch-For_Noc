@@ -16,6 +16,7 @@ import argparse, sys
 BASE_PATH = '/export/research26/cyclone/hansika/noc_data'
 DIR = '64_nodes_100_c'
 NO_OF_FILES = 39
+No_OF_EPOCHS = 5
 
 
 parser=argparse.ArgumentParser()
@@ -23,6 +24,7 @@ parser=argparse.ArgumentParser()
 parser.add_argument('--base-path', help='base path')
 parser.add_argument('--dir', help='specific directory')
 parser.add_argument('--no-of-files', help='no of data files')
+parser.add_argument('--no-of-epochs', help='no epochs for training')
 
 args=parser.parse_args()
 
@@ -37,10 +39,8 @@ else:
         NO_OF_FILES = 39
     else:
         NO_OF_FILES = 41
-
-
-print(datetime.datetime.now())
-
+if args.no_of_epochs!= None:
+    No_OF_EPOCHS = int(args.no_of_epochs)
 
 def print_and_write_to_file(filez, text1, text2=None):
     if text2 != None:
@@ -52,8 +52,9 @@ def print_and_write_to_file(filez, text1, text2=None):
     filez.write("\n")
 
 
-filez = open(BASE_PATH + "/model_test_results/" + DIR , 'a+')
+filez = open(BASE_PATH + "/model_test_results/epoch_" + str(No_OF_EPOCHS) + "/" + DIR , 'a+')
 print_and_write_to_file(filez, '----------------------------------------------------------')
+print_and_write_to_file(filez, datetime.datetime.now())
 
 
 class MyDataset(Dataset):
@@ -70,8 +71,6 @@ class MyDataset(Dataset):
     
     def __len__(self):
         return len(self.y)
-
-
 
 
 
@@ -136,8 +135,8 @@ class Net(nn.Module):
 dir_of_model = DIR[0: DIR.rfind("_")+1]
 
 dataset = torch.utils.data.DataLoader(full_dataset, batch_size=50, shuffle=True)
-print_and_write_to_file(filez,"Testing with : " + BASE_PATH + "/models/" + dir_of_model)
-net = torch.load(BASE_PATH + "/models/" + dir_of_model)
+print_and_write_to_file(filez,"Testing with : " + BASE_PATH + "/models/epoch_" + str(No_OF_EPOCHS) + "/" + dir_of_model)
+net = torch.load(BASE_PATH + "/models/epoch_" + str(No_OF_EPOCHS) + "/" + dir_of_model)
 
 correct = 0
 TP = 0
