@@ -56,7 +56,9 @@ def print_and_write_to_file(filez, text1, text2=None):
 
 def print_and_write_bestparams_to_file(filez, dictz):
     filez.write("Current Best params :\n")
+    print("Current Best params :")
     filez.write(json.dumps(dictz))
+    print(json.dumps(dictz))
     filez.write("\n")
 
 
@@ -298,7 +300,7 @@ for combination in hyperparam_combinations:
     if accurecy > best_accurecy:
         best_accurecy = accurecy
         best_params = combination
-    print_and_write_to_file(filez, "Best Accurecy : ", accurecy)
+    print_and_write_to_file(filez, "Best Accurecy : ", best_accurecy)
     print_and_write_bestparams_to_file(filez, best_params)
     gc.collect()
     filez.flush()
