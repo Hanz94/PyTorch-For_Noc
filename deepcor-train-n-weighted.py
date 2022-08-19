@@ -16,6 +16,7 @@ BASE_PATH = '/export/research26/cyclone/hansika/noc_data'
 DIR = '64_nodes_100_'
 NO_OF_FILES = 41
 No_OF_EPOCHS = 5
+NO_OF_FLITS = 450
 
 
 parser=argparse.ArgumentParser()
@@ -24,6 +25,7 @@ parser.add_argument('--base-path', help='base path')
 parser.add_argument('--dir', help='specific directory')
 parser.add_argument('--no-of-files', help='no of data files')
 parser.add_argument('--no-of-epochs', help='no epochs for training')
+parser.add_argument('--no-of-flits', help='IFD length for training')
 
 args=parser.parse_args()
 
@@ -40,6 +42,8 @@ else:
         NO_OF_FILES = 41
 if args.no_of_epochs!= None:
     No_OF_EPOCHS = int(args.no_of_epochs)
+if args.no_of_flits!= None:
+    NO_OF_FLITS = int(args.no_of_flits)
 
 
 def print_and_write_to_file(filez, text1, text2=None):
@@ -74,22 +78,29 @@ class MyDataset(Dataset):
 
 
 list_of_dataset = []
-number_of_files = NO_OF_FILES
+
+count_path = BASE_PATH + "/numpy_data_reduced/" + DIR + "/" + "Y"
+number_of_files = len([name for name in os.listdir(count_path) if os.path.isfile(os.path.join(count_path, name))])
+
+# number_of_files = NO_OF_FILES
 print_and_write_to_file(filez,"No of flies : " + str(number_of_files))
-print_and_write_to_file(filez,"Reading from : " + BASE_PATH + "/numpy_data_50_reduced/" + DIR )
+print_and_write_to_file(filez,"Reading from : " + BASE_PATH + "/numpy_data_reduced/" + DIR )
 
 for i in range(number_of_files):
-     list_of_dataset.append(MyDataset(BASE_PATH + "/numpy_data_50_reduced/" + DIR + "/", i))
+     list_of_dataset.append(MyDataset(BASE_PATH + "/numpy_data_reduced/" + DIR + "/", i))
 
 full_dataset = ConcatDataset(list_of_dataset)
 
-print_and_write_to_file(filez,len(full_dataset))
+len_full = len(full_dataset)
+print_and_write_to_file(filez,len_full)
 
 
-if number_of_files == 41:
-    train_data_set, test_data_set = torch.utils.data.random_split(full_dataset, [16128, 8064])
-else:
-    train_data_set, test_data_set = torch.utils.data.random_split(full_dataset, [15176, 7588])
+# if number_of_files == 41:
+#     train_data_set, test_data_set = torch.utils.data.random_split(full_dataset, [16128, 8064])
+# else:
+#     train_data_set, test_data_set = torch.utils.data.random_split(full_dataset, [15176, 7588])
+
+train_data_set, test_data_set = torch.utils.data.random_split(full_dataset, [len_full- (len_full//3), len_full//3])
 
 
 train_classes = [label.item() for _, label in train_data_set]
@@ -105,10 +116,10 @@ gc.collect()
 
 
 # W1, W2, K1, K2 are hyper parameters that eventually needed training
-W1 = 30
-W2 = 10
-K1= 2000
-K2 = 1000
+W1 = 5
+W2 = 30
+K1= 1000
+K2 = 2000
 
 #dummy data to try the NN ( 2 arrays of size 450)
 # dummy = torch.randn(2,450).view(-1,1,2,450)
@@ -122,7 +133,7 @@ class Net(nn.Module):
         self.conv2 = nn.Conv2d(K1, K2, (1,W2), stride=(1, 1))
         self.pool2 = nn.MaxPool2d((1, 5), stride=(1, 1))
 
-        x = torch.randn(2,450).view(-1,1,2,450)
+        x = torch.randn(2,NO_OF_FLITS).view(-1,1,2,NO_OF_FLITS)
         self._to_linear = None
         self.convs(x)
         
@@ -177,7 +188,7 @@ if isTraining:
 
     # learning rate of the adam optimizer should be a hyperparameter
     # optimizer = optim.Adam(net.parameters(), lr=0.001)
-    optimizer = optim.SGD(net.parameters(), lr=learning_rate)
+    optimizer = optim.SGD(net.parameters(), lr=learning_rate, weight_decay=0.01)
     # loss_fun = nn.CrossEntropyLoss()
 
     for epoch in range(EPOCHS):
@@ -185,7 +196,7 @@ if isTraining:
             X, y = data 
             net.zero_grad()  
             X = X.type(torch.FloatTensor)
-            output = net(X.view(-1,1,2,450))
+            output = net(X.view(-1,1,2,NO_OF_FLITS))
             loss = F.cross_entropy(output, y)
             loss.backward() 
             optimizer.step() 
@@ -206,7 +217,7 @@ if isTraining:
         for data in testset:
             X, y = data
             X = X.type(torch.FloatTensor)
-            output = net(X.view(-1,1,2,450))
+            output = net(X.view(-1,1,2,NO_OF_FLITS))
             for idx, i in enumerate(output):
                 if torch.argmax(i) == y[idx]:
                     correct += 1

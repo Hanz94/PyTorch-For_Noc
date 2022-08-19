@@ -76,10 +76,10 @@ class MyDataset(Dataset):
 list_of_dataset = []
 number_of_files = NO_OF_FILES
 print_and_write_to_file(filez,"No of flies : " + str(number_of_files))
-print_and_write_to_file(filez,"Reading from : " + BASE_PATH + "/numpy_data_50_reduced/" + DIR )
+print_and_write_to_file(filez,"Reading from : " + BASE_PATH + "/numpy_data_del0550_reduced/" + DIR )
 
 for i in range(number_of_files):
-     list_of_dataset.append(MyDataset(BASE_PATH + "/numpy_data_50_reduced/" + DIR + "/", i))
+     list_of_dataset.append(MyDataset(BASE_PATH + "/numpy_data_del0550_reduced/" + DIR + "/", i))
 
 full_dataset = ConcatDataset(list_of_dataset)
 

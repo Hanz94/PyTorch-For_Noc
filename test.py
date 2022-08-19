@@ -56,9 +56,7 @@ def print_and_write_to_file(filez, text1, text2=None):
 
 def print_and_write_bestparams_to_file(filez, dictz):
     filez.write("Current Best params :\n")
-    print("Current Best params :")
     filez.write(json.dumps(dictz))
-    print(json.dumps(dictz))
     filez.write("\n")
 
 
@@ -158,9 +156,9 @@ gc.collect()
 # k1, k2 (1000,2000) k1=2000, k2=1000
 
 hyperparam_combinations = []
-# hyperparam_combinations.append({"W1" : 5, "W2": 5, "K1": 1000, "K2": 1000})
-# hyperparam_combinations.append({"W1" : 5, "W2": 10, "K1": 1000, "K2": 1000})
-# hyperparam_combinations.append({"W1" : 5, "W2": 20, "K1": 1000, "K2": 1000})
+hyperparam_combinations.append({"W1" : 5, "W2": 5, "K1": 1000, "K2": 1000})
+hyperparam_combinations.append({"W1" : 5, "W2": 10, "K1": 1000, "K2": 1000})
+hyperparam_combinations.append({"W1" : 5, "W2": 20, "K1": 1000, "K2": 1000})
 hyperparam_combinations.append({"W1" : 5, "W2": 30, "K1": 1000, "K2": 1000})
 hyperparam_combinations.append({"W1" : 10, "W2": 5, "K1": 1000, "K2": 1000})
 hyperparam_combinations.append({"W1" : 10, "W2": 10, "K1": 1000, "K2": 1000})
@@ -223,8 +221,8 @@ hyperparam_combinations.append({"W1" : 30, "W2": 10, "K1": 1000, "K2": 2000})
 hyperparam_combinations.append({"W1" : 30, "W2": 20, "K1": 1000, "K2": 2000})
 hyperparam_combinations.append({"W1" : 30, "W2": 30, "K1": 1000, "K2": 2000})
 
-best_accurecy = 0.96
-best_params = {"W1" : 5, "W2": 20, "K1": 1000, "K2": 1000}
+best_accurecy = 0.0
+best_params = hyperparam_combinations[0]
 # --------------------------------------------------------------------------
 for combination in hyperparam_combinations:
     print_and_write_to_file(filez, '----------------------------------------------------------')

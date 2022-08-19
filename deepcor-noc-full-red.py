@@ -76,10 +76,10 @@ class MyDataset(Dataset):
 list_of_dataset = []
 number_of_files = NO_OF_FILES
 print_and_write_to_file(filez,"No of flies : " + str(number_of_files))
-print_and_write_to_file(filez,"Reading from : " + BASE_PATH + "/numpy_data_50_reduced/" + DIR )
+print_and_write_to_file(filez,"Reading from : " + BASE_PATH + "/numpy_data_reduced/" + DIR )
 
 for i in range(number_of_files):
-     list_of_dataset.append(MyDataset(BASE_PATH + "/numpy_data_50_reduced/" + DIR + "/", i))
+     list_of_dataset.append(MyDataset(BASE_PATH + "/numpy_data_reduced/" + DIR + "/", i))
 
 full_dataset = ConcatDataset(list_of_dataset)
 
@@ -119,8 +119,6 @@ class Net(nn.Module):
         super().__init__() 
         self.conv1 = nn.Conv2d(1, K1, (2,W1), stride=(2, 1))
         self.pool1 = nn.MaxPool2d((1, 5), stride=(1, 1))
-        self.conv2 = nn.Conv2d(K1, K2, (1,W2), stride=(1, 1))
-        self.pool2 = nn.MaxPool2d((1, 5), stride=(1, 1))
 
         x = torch.randn(2,450).view(-1,1,2,450)
         self._to_linear = None
@@ -134,7 +132,6 @@ class Net(nn.Module):
 
     def convs(self, x):
         x = self.pool1(F.relu(self.conv1(x)))
-        x = self.pool2(F.relu(self.conv2(x)))
 
         if self._to_linear is None:
             self._to_linear = x[0].shape[0]*x[0].shape[1]*x[0].shape[2]
@@ -192,8 +189,8 @@ if isTraining:
         print_and_write_to_file(filez,loss)  
 
 
-    torch.save(net, BASE_PATH + "/models_new/epoch_" + str(No_OF_EPOCHS) + "/" + DIR)
-    print_and_write_to_file(filez,"Model Saved as : " + BASE_PATH + "/models_new/epoch_" + str(No_OF_EPOCHS) + "/" + DIR )
+    torch.save(net, BASE_PATH + "/models/epoch_" + str(No_OF_EPOCHS) + "/" + DIR)
+    print_and_write_to_file(filez,"Model Saved as : " + BASE_PATH + "/models/epoch_" + str(No_OF_EPOCHS) + "/" + DIR )
 
     correct = 0
     TP = 0

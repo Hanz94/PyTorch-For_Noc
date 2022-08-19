@@ -234,12 +234,12 @@ class Net(nn.Module):
 def train_net(config, checkpoint_dir=None, data_dir=None):
     net = Net(config["W1"], config["W2"], config["K1"], config["K2"])
 
-    device = "cpu"
-    if torch.cuda.is_available():
-        device = "cuda:0"
-        if torch.cuda.device_count() > 1:
-            net = nn.DataParallel(net)
-    net.to(device)
+    # device = "cpu"
+    # if torch.cuda.is_available():
+    #     device = "cuda:0"
+    #     if torch.cuda.device_count() > 1:
+    #         net = nn.DataParallel(net)
+    # net.to(device)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=config["lr"], momentum=0.9)
@@ -259,13 +259,11 @@ def train_net(config, checkpoint_dir=None, data_dir=None):
     trainloader = torch.utils.data.DataLoader(
         train_subset,
         batch_size=int(config["batch_size"]),
-        shuffle=True,
-        num_workers=8)
+        shuffle=True)
     valloader = torch.utils.data.DataLoader(
         val_subset,
         batch_size=int(config["batch_size"]),
-        shuffle=True,
-        num_workers=8)
+        shuffle=True)
 
     for epoch in range(10):  # loop over the dataset multiple times
         running_loss = 0.0
@@ -273,7 +271,7 @@ def train_net(config, checkpoint_dir=None, data_dir=None):
         for i, data in enumerate(trainloader, 0):
             # get the inputs; data is a list of [inputs, labels]
             inputs, labels = data
-            inputs, labels = inputs.to(device), labels.to(device)
+            # inputs, labels = inputs.to(device), labels.to(device)
 
             # zero the parameter gradients
             optimizer.zero_grad()
@@ -301,10 +299,12 @@ def train_net(config, checkpoint_dir=None, data_dir=None):
         for i, data in enumerate(valloader, 0):
             with torch.no_grad():
                 inputs, labels = data
-                inputs, labels = inputs.to(device), labels.to(device)
+                # inputs, labels = inputs.to(device), labels.to(device)
 
-                outputs = net(inputs)
-                _, predicted = torch.max(outputs.data, 1)
+                inputs = inputs.type(torch.FloatTensor)
+
+                outputs = net(inputs.view(-1,1,2,450))
+                _, predicted = torch.max(outputs, 1)
                 total += labels.size(0)
                 correct += (predicted == labels).sum().item()
 
@@ -333,14 +333,14 @@ def test_accuracy(net, device="cpu"):
     trainset, testset = load_data()
 
     testloader = torch.utils.data.DataLoader(
-        testset, batch_size=4, shuffle=False, num_workers=2)
+        testset, batch_size=4, shuffle=False)
 
     correct = 0
     total = 0
     with torch.no_grad():
         for data in testloader:
             images, labels = data
-            images, labels = images.to(device), labels.to(device)
+            # images, labels = images.to(device), labels.to(device)
             outputs = net(images)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
@@ -410,8 +410,8 @@ def test_accuracy(net, device="cpu"):
 # The full main function looks like this:
 
 
-def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
-    data_dir = os.path.abspath("/cise/homes/hansikam.lokukat/64_nodes_100")
+def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2, cpus_per_trial=2):
+    data_dir = os.path.abspath("/export/research26/cyclone/hansika/64_nodes_100")
     checkpoint_dir = os.path.abspath("/export/research26/cyclone/hansika/cheakpoint")
     load_data(data_dir)
     config = {
@@ -433,7 +433,8 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
         metric_columns=["loss", "accuracy", "training_iteration"])
     result = tune.run(
         partial(train_net, data_dir=data_dir, checkpoint_dir=checkpoint_dir),
-        resources_per_trial={"cpu": 2, "gpu": gpus_per_trial},
+        local_dir="/export/research26/cyclone/hansika/ray_results",
+        resources_per_trial={"cpu": cpus_per_trial, "gpu": gpus_per_trial},
         config=config,
         num_samples=num_samples,
         scheduler=scheduler,
@@ -447,12 +448,12 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
         best_trial.last_result["accuracy"]))
 
     best_trained_model = Net(best_trial.config["W1"], best_trial.config["W2"], best_trial.config["K1"], best_trial.config["K2"])
-    device = "cpu"
-    if torch.cuda.is_available():
-        device = "cuda:0"
-        if gpus_per_trial > 1:
-            best_trained_model = nn.DataParallel(best_trained_model)
-    best_trained_model.to(device)
+    # device = "cpu"
+    # if torch.cuda.is_available():
+    #     device = "cuda:0"
+    #     if gpus_per_trial > 1:
+    #         best_trained_model = nn.DataParallel(best_trained_model)
+    # best_trained_model.to(device)
 
     best_checkpoint_dir = best_trial.checkpoint.value
     model_state, optimizer_state = torch.load(os.path.join(
@@ -465,7 +466,7 @@ def main(num_samples=10, max_num_epochs=10, gpus_per_trial=2):
 
 if __name__ == "__main__":
     # You can change the number of GPUs per trial here:
-    main(num_samples=20, max_num_epochs=10, gpus_per_trial=0)
+    main(num_samples=2, max_num_epochs=10, gpus_per_trial=0, cpus_per_trial=41)
 
 
 ######################################################################

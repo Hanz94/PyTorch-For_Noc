@@ -27,11 +27,16 @@ class MyDataset(Dataset):
 
 
 list_of_dataset = []
-number_of_files = 39
+
+DIR = '/home/hansika/gem5/gem5/scripts/numpy_data_test/64_nodes/X'
+print(len([name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name))]))
+
+number_of_files = len([name for name in os.listdir(DIR) if os.path.isfile(os.path.join(DIR, name))])
+print(number_of_files)
 from torch.utils.data import ConcatDataset
 
 for i in range(number_of_files):
-     list_of_dataset.append(MyDataset("/export/research26/cyclone/hansika/noc_data/numpy_data_reduced/64_nodes_95_c/",i))
+     list_of_dataset.append(MyDataset("/home/hansika//gem5/gem5/scripts/numpy_data_test/64_nodes/",i))
 
 full_dataset = ConcatDataset(list_of_dataset)
 
