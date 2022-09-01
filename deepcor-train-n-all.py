@@ -22,7 +22,6 @@ parser=argparse.ArgumentParser()
 
 parser.add_argument('--base-path', help='base path')
 parser.add_argument('--dir', help='specific directory')
-parser.add_argument('--no-of-files', help='no of data files')
 parser.add_argument('--no-of-epochs', help='no epochs for training')
 parser.add_argument('--no-of-flits', help='IFD length for training')
 
@@ -32,13 +31,6 @@ if args.base_path != None:
     BASE_PATH = args.base_path
 if args.dir != None:
     DIR = args.dir
-if args.no_of_files!= None:
-    NO_OF_FILES = int(args.no_of_files)
-else:
-    if DIR[-1] == 'c' or DIR[-2] == 'c':
-        NO_OF_FILES = 39
-    else:
-        NO_OF_FILES = 41
 if args.no_of_epochs!= None:
     No_OF_EPOCHS = int(args.no_of_epochs)
 if args.no_of_flits!= None:
@@ -81,7 +73,7 @@ list_of_dataset = []
 count_path = BASE_PATH + "/numpy_data_reduced/" + DIR + "/" + "Y"
 number_of_files = len([name for name in os.listdir(count_path) if os.path.isfile(os.path.join(count_path, name))])
 
-# number_of_files = NO_OF_FILES
+
 print_and_write_to_file(filez,"No of flies : " + str(number_of_files))
 print_and_write_to_file(filez,"Reading from : " + BASE_PATH + "/numpy_data_reduced/" + DIR )
 
@@ -92,12 +84,6 @@ full_dataset = ConcatDataset(list_of_dataset)
 
 len_full = len(full_dataset)
 print_and_write_to_file(filez,len_full)
-
-
-# if number_of_files == 41:
-#     train_data_set, test_data_set = torch.utils.data.random_split(full_dataset, [16128, 8064])
-# else:
-#     train_data_set, test_data_set = torch.utils.data.random_split(full_dataset, [15176, 7588])
 
 train_data_set, test_data_set = torch.utils.data.random_split(full_dataset, [len_full- (len_full//3), len_full//3])
 
@@ -120,9 +106,6 @@ W2 = 30
 K1= 1000
 K2 = 2000
 
-#dummy data to try the NN ( 2 arrays of size 450)
-# dummy = torch.randn(2,450).view(-1,1,2,450)
-
 # represents the whole CNN
 class Net(nn.Module):
     def __init__(self):
@@ -135,8 +118,7 @@ class Net(nn.Module):
         x = torch.randn(2,NO_OF_FLITS).view(-1,1,2,NO_OF_FLITS)
         self._to_linear = None
         self.convs(x)
-        
-        # self.fc1 = nn.Linear(1000*404, 3000) # need to automate arriving at this number (1000*254)
+
         self.fc1 = nn.Linear(self._to_linear, 3000)
         self.fc2 = nn.Linear(3000, 800) 
         self.fc3 = nn.Linear(800,100)
@@ -185,10 +167,7 @@ if isTraining:
     trainset = torch.utils.data.DataLoader(train_data_set, batch_size=BATCH_SIZE, shuffle=True)
     testset = torch.utils.data.DataLoader(test_data_set, batch_size=BATCH_SIZE, shuffle=True)
 
-    # learning rate of the adam optimizer should be a hyperparameter
-    # optimizer = optim.Adam(net.parameters(), lr=0.001)
     optimizer = optim.SGD(net.parameters(), lr=learning_rate)
-    # loss_fun = nn.CrossEntropyLoss()
 
     for epoch in range(EPOCHS):
         for data in trainset:
