@@ -12,29 +12,27 @@ import datetime
 import argparse, sys
 
 BASE_PATH = '/export/research26/cyclone/hansika/noc_data'
-# DIR = '64_nodes_100_'
-NOISE_RATIO = 0
 No_OF_EPOCHS = 5
 NO_OF_FLITS = 250
+NOISE_RATIO = 0
 
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--base-path', help='base path')
-# parser.add_argument('--dir', help='specific directory')
-parser.add_argument('--noise-ratio', help='noise ratio of the collected data, defaults to 0')
 parser.add_argument('--no-of-epochs', help='no epochs for training')
 parser.add_argument('--no-of-flits', help='IFD length for training')
+parser.add_argument('--noise-ratio', help='noise ratio of the collected data, defaults to 0')
 
 args = parser.parse_args()
 
 if args.base_path != None:
     BASE_PATH = args.base_path
-if args.dir != None:
-    DIR = args.dir
 if args.no_of_epochs != None:
     No_OF_EPOCHS = int(args.no_of_epochs)
 if args.no_of_flits != None:
     NO_OF_FLITS = int(args.no_of_flits)
+if args.noise_ratio != None:
+    NOISE_RATIO = int(args.noise_ratio)
 
 
 def print_and_write_to_file(filez, text1, text2=None):
@@ -47,7 +45,7 @@ def print_and_write_to_file(filez, text1, text2=None):
     filez.write("\n")
 
 
-filez = open(BASE_PATH + "/model_train_results/epoch_" + str(No_OF_EPOCHS) + "/" + DIR, 'a+')
+filez = open(BASE_PATH + "/model_train_results/epoch_" + str(No_OF_EPOCHS) + "/actual_" + NOISE_RATIO, 'a+')
 print_and_write_to_file(filez, '----------------------------------------------------------')
 
 print_and_write_to_file(filez, datetime.datetime.now())
@@ -70,15 +68,16 @@ class MyDataset(Dataset):
 
 
 list_of_dataset = []
+ben_order = ["FFT","FMM","LU","BARNES","RADIX","FFT"]
 
-count_path = BASE_PATH + "/numpy_data_reduced/" + DIR + "/" + "Y"
-number_of_files = len([name for name in os.listdir(count_path) if os.path.isfile(os.path.join(count_path, name))])
-
-print_and_write_to_file(filez, "No of flies : " + str(number_of_files))
-print_and_write_to_file(filez, "Reading from : " + BASE_PATH + "/numpy_data_reduced/" + DIR)
-
-for i in range(number_of_files):
-    list_of_dataset.append(MyDataset(BASE_PATH + "/numpy_data_reduced/" + DIR + "/", i))
+for x in range(5):
+    dir_path = "64_nodes__" + ben_order[x] + "_" + ben_order[x+1] + "_" + str(NOISE_RATIO) + "_" + str(NO_OF_FLITS)
+    count_path = BASE_PATH + "/numpy_data_reduced/" + dir_path + "/" + "Y"
+    number_of_files = len([name for name in os.listdir(count_path) if os.path.isfile(os.path.join(count_path, name))])
+    print_and_write_to_file(filez, "No of flies for" + ben_order[x] + "_" + ben_order[x+1] + ": " + str(number_of_files))
+    print_and_write_to_file(filez, "Reading from : " + BASE_PATH + "/numpy_data_reduced/" + dir_path)
+    for i in range(number_of_files):
+        list_of_dataset.append(MyDataset(BASE_PATH + "/numpy_data_reduced/" + dir_path + "/", i))
 
 full_dataset = ConcatDataset(list_of_dataset)
 
