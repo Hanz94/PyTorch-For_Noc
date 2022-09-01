@@ -15,6 +15,7 @@ BASE_PATH = '/export/research26/cyclone/hansika/noc_data'
 No_OF_EPOCHS = 5
 NO_OF_FLITS = 250
 NOISE_RATIO = 0
+MAIN_DIR = "/actual_0"
 
 parser = argparse.ArgumentParser()
 
@@ -33,6 +34,7 @@ if args.no_of_flits != None:
     NO_OF_FLITS = int(args.no_of_flits)
 if args.noise_ratio != None:
     NOISE_RATIO = int(args.noise_ratio)
+    MAIN_DIR = "/actual_" + str(NOISE_RATIO)
 
 
 def print_and_write_to_file(filez, text1, text2=None):
@@ -45,7 +47,7 @@ def print_and_write_to_file(filez, text1, text2=None):
     filez.write("\n")
 
 
-filez = open(BASE_PATH + "/model_train_results/epoch_" + str(No_OF_EPOCHS) + "/actual_" + NOISE_RATIO, 'a+')
+filez = open(BASE_PATH + "/model_train_results/epoch_" + str(No_OF_EPOCHS) + MAIN_DIR, 'a+')
 print_and_write_to_file(filez, '----------------------------------------------------------')
 
 print_and_write_to_file(filez, datetime.datetime.now())
@@ -68,7 +70,7 @@ class MyDataset(Dataset):
 
 
 list_of_dataset = []
-ben_order = ["FFT","FMM","LU","BARNES","RADIX","FFT"]
+ben_order = ["FFT", "FMM", "LU", "BARNES", "RADIX", "FFT"]
 
 for x in range(5):
     dir_path = "64_nodes__" + ben_order[x] + "_" + ben_order[x+1] + "_" + str(NOISE_RATIO) + "_" + str(NO_OF_FLITS)
@@ -179,9 +181,9 @@ if isTraining:
             optimizer.step()
         print_and_write_to_file(filez, loss)
 
-    torch.save(net, BASE_PATH + "/models_new/epoch_" + str(No_OF_EPOCHS) + "/" + DIR)
+    torch.save(net, BASE_PATH + "/models_new/epoch_" + str(No_OF_EPOCHS) + "/" + MAIN_DIR)
     print_and_write_to_file(filez,
-                            "Model Saved as : " + BASE_PATH + "/models_new/epoch_" + str(No_OF_EPOCHS) + "/" + DIR)
+                            "Model Saved as : " + BASE_PATH + "/models_new/epoch_" + str(No_OF_EPOCHS) + "/" + MAIN_DIR)
 
     correct = 0
     TP = 0
