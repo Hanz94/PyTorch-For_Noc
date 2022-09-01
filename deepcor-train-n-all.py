@@ -12,16 +12,17 @@ import datetime
 import argparse, sys
 
 BASE_PATH = '/export/research26/cyclone/hansika/noc_data'
-DIR = '64_nodes_100_'
-NO_OF_FILES = 41
+# DIR = '64_nodes_100_'
+NOISE_RATIO = 0
 No_OF_EPOCHS = 5
-NO_OF_FLITS = 450
+NO_OF_FLITS = 250
 
 
 parser=argparse.ArgumentParser()
 
 parser.add_argument('--base-path', help='base path')
-parser.add_argument('--dir', help='specific directory')
+# parser.add_argument('--dir', help='specific directory')
+parser.add_argument('--noise-ratio', help='noise ratio of the collected data, defaults to 0')
 parser.add_argument('--no-of-epochs', help='no epochs for training')
 parser.add_argument('--no-of-flits', help='IFD length for training')
 
