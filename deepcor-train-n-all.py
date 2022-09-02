@@ -84,15 +84,15 @@ for x in range(5):
 full_dataset = ConcatDataset(list_of_dataset)
 
 len_full = len(full_dataset)
-print_and_write_to_file(filez, len_full)
+print_and_write_to_file(filez, "Full Dataset Length: ", len_full)
 
 train_data_set, test_data_set = torch.utils.data.random_split(full_dataset, [len_full - (len_full // 3), len_full // 3])
 
 train_classes = [label.item() for _, label in train_data_set]
-print_and_write_to_file(filez, Counter(train_classes))
+print_and_write_to_file(filez, "For Train: ", Counter(train_classes))
 
 test_classes = [label.item() for _, label in test_data_set]
-print_and_write_to_file(filez, Counter(test_classes))
+print_and_write_to_file(filez, "For Test: ", Counter(test_classes))
 
 gc.collect()
 
