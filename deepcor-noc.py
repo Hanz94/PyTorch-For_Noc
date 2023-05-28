@@ -95,7 +95,7 @@ class Net(nn.Module):
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
         x = self.fc4(x)
-        return x
+        return torch.sigmoid(x)
     
 # ------------------- Training the CNN ------------------------------------- ##
 # For now this code is only to show the structure, I need to add data preparation and modify code accordingly.
